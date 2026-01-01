@@ -29,11 +29,11 @@ export function calculateDeviation(directRoute, detourRoute) {
 
 export function getDeviationLevel(deviationPercent) {
   if (deviationPercent < 10) {
-    return { level: 'low', label: 'On the way', color: 'green' };
+    return { level: 'low', label: 'Go for it', color: 'green' };
   } else if (deviationPercent < 25) {
     return { level: 'medium', label: 'Slight detour', color: 'yellow' };
   } else {
-    return { level: 'high', label: 'Detour', color: 'red' };
+    return { level: 'high', label: 'Think twice', color: 'red' };
   }
 }
 

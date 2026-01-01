@@ -1,9 +1,11 @@
-import { useState, useCallback, useEffect } from 'react';
+import { useState, useCallback, useEffect, useRef } from 'react';
 import { LoadScript } from '@react-google-maps/api';
 import LocationInput from './components/LocationInput';
 import StopsList from './components/StopsList';
 import MapView from './components/MapView';
+import NearbyStations from './components/NearbyStations';
 import { useDirections } from './hooks/useDirections';
+import { useNearbyStations } from './hooks/useNearbyStations';
 import { formatDistance, formatDuration } from './utils/deviationCalculator';
 
 const libraries = ['places'];
@@ -15,6 +17,8 @@ export default function App() {
   const [start, setStart] = useState({ name: '', lat: null, lng: null });
   const [end, setEnd] = useState({ name: '', lat: null, lng: null });
   const [stops, setStops] = useState([]);
+  const [showNearbyStations, setShowNearbyStations] = useState(false);
+  const mapRef = useRef(null);
 
   const {
     directRoute,
@@ -25,6 +29,13 @@ export default function App() {
     error,
     calculateAllDeviations,
   } = useDirections();
+
+  const {
+    nearbyStations,
+    loadingStations,
+    findNearbyStations,
+    clearStations,
+  } = useNearbyStations();
 
   const handleAddStop = useCallback(() => {
     setStops(prev => [...prev, { id: generateStopId(), name: '', lat: null, lng: null }]);
@@ -44,6 +55,24 @@ export default function App() {
     }
   }, [start, end, stops, calculateAllDeviations]);
 
+  const handleMapReady = useCallback((map) => {
+    mapRef.current = map;
+  }, []);
+
+  const handleToggleNearbyStations = useCallback(() => {
+    setShowNearbyStations(prev => !prev);
+  }, []);
+
+  const handleAddStationAsStop = useCallback((station) => {
+    const newStop = {
+      id: generateStopId(),
+      name: station.name,
+      lat: station.lat,
+      lng: station.lng,
+    };
+    setStops(prev => [...prev, newStop]);
+  }, []);
+
   useEffect(() => {
     if (start.lat && end.lat) {
       const timer = setTimeout(() => {
@@ -52,6 +81,15 @@ export default function App() {
       return () => clearTimeout(timer);
     }
   }, [start, end, stops, calculateAllDeviations]);
+
+  // Search for nearby stations when enabled and route is available
+  useEffect(() => {
+    if (showNearbyStations && directDirections && directRoute && mapRef.current) {
+      findNearbyStations(mapRef.current, start, end, directDirections, directRoute);
+    } else if (!showNearbyStations) {
+      clearStations();
+    }
+  }, [showNearbyStations, directDirections, directRoute, start, end, findNearbyStations, clearStations]);
 
   const apiKey = import.meta.env.VITE_GOOGLE_MAPS_API_KEY;
 
@@ -82,6 +120,8 @@ export default function App() {
             stops={stops}
             directDirections={directDirections}
             combinedDirections={combinedDirections}
+            nearbyStations={showNearbyStations ? nearbyStations : []}
+            onMapReady={handleMapReady}
           />
         </div>
 
@@ -90,7 +130,7 @@ export default function App() {
           <div className="p-4 space-y-4">
             {/* Header */}
             <div className="text-center pb-2 border-b">
-              <h1 className="text-xl font-bold text-gray-800">Route Deviation Checker</h1>
+              <h1 className="text-xl font-bold text-gray-800">Is It OTW?</h1>
               <p className="text-sm text-gray-500">Check if stops are on the way</p>
             </div>
 
@@ -137,6 +177,17 @@ export default function App() {
               deviations={deviations}
             />
 
+            {/* Nearby Stations */}
+            {directRoute && (
+              <NearbyStations
+                enabled={showNearbyStations}
+                onToggle={handleToggleNearbyStations}
+                stations={nearbyStations}
+                loading={loadingStations}
+                onAddStation={handleAddStationAsStop}
+              />
+            )}
+
             {/* Loading State */}
             {loading && (
               <div className="text-center py-4">
@@ -163,7 +214,7 @@ export default function App() {
 
             {/* Legend */}
             <div className="pt-4 border-t border-gray-100">
-              <p className="text-xs text-gray-500 text-center mb-2">Deviation Thresholds</p>
+              <p className="text-xs text-gray-500 text-center mb-2">How much extra?</p>
               <div className="flex justify-center gap-3">
                 <div className="flex items-center gap-1.5">
                   <span className="w-2.5 h-2.5 rounded-full bg-green-500"></span>

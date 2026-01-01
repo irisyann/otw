@@ -11,7 +11,7 @@ const defaultCenter = {
   lng: 101.6869,
 };
 
-export default function MapView({ start, end, stops, directDirections, combinedDirections }) {
+export default function MapView({ start, end, stops, directDirections, combinedDirections, nearbyStations = [], onMapReady }) {
   const mapRef = useRef(null);
   const directRendererRef = useRef(null);
   const combinedRendererRef = useRef(null);
@@ -46,7 +46,10 @@ export default function MapView({ start, end, stops, directDirections, combinedD
 
   const onMapLoad = useCallback((map) => {
     mapRef.current = map;
-  }, []);
+    if (onMapReady) {
+      onMapReady(map);
+    }
+  }, [onMapReady]);
 
   // Manage direct route renderer
   useEffect(() => {
@@ -164,6 +167,24 @@ export default function MapView({ start, end, stops, directDirections, combinedD
             strokeWeight: 2,
           }}
           label={{ text: String(index + 1), color: 'white', fontWeight: 'bold', fontSize: '11px' }}
+        />
+      ))}
+
+      {/* Nearby station markers */}
+      {nearbyStations.map((station, index) => (
+        <Marker
+          key={station.id}
+          position={{ lat: station.lat, lng: station.lng }}
+          icon={{
+            path: window.google?.maps?.SymbolPath?.CIRCLE,
+            scale: 8,
+            fillColor: '#9333EA',
+            fillOpacity: 0.8,
+            strokeColor: 'white',
+            strokeWeight: 2,
+          }}
+          label={{ text: String.fromCharCode(65 + index), color: 'white', fontWeight: 'bold', fontSize: '10px' }}
+          title={station.name}
         />
       ))}
     </GoogleMap>
