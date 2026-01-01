@@ -3,6 +3,9 @@
 Fully vibe-coded with Claude. Helps you figure out if your stops are actually on the way.
 
 ## Features
+<img width="100" height="227" alt="image" src="https://github.com/user-attachments/assets/e9a299bc-22f1-4cec-8043-3e3b500ee17d" />
+
+
 
 - **Route Planning** - Set your start and end points with Google Places autocomplete
 - **Stop Analysis** - Add multiple stops and see how much extra distance/time each one adds
