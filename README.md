@@ -3,7 +3,8 @@
 Fully vibe-coded with Claude. Helps you figure out if your stops are actually on the way.
 
 ## Features
-<img width="100" height="227" alt="image" src="https://github.com/user-attachments/assets/e9a299bc-22f1-4cec-8043-3e3b500ee17d" />
+<img width="178" height="404" alt="mobile view" src="https://github.com/user-attachments/assets/4ae20784-e805-4b10-847c-68478c447167" />
+<img width="800" height="404" alt="desktop view" src="https://github.com/user-attachments/assets/01eb6be5-621f-4443-ba53-a152fa1870bb" />
 
 
 
@@ -39,7 +40,7 @@ Fully vibe-coded with Claude. Helps you figure out if your stops are actually on
 
    Your API key needs these APIs enabled in Google Cloud Console:
    - Maps JavaScript API
-   - Places API
+   - Places API (New)
    - Directions API
 
 3. **Run the dev server**
