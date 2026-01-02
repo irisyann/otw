@@ -118,7 +118,7 @@ export default function LocationInput({
         ) : (
           <div
             ref={containerRef}
-            className={`location-input-container ${icon ? 'has-icon' : ''}`}
+            className={`location-input-container border border-gray-200 rounded-lg ${icon ? 'has-icon' : ''}`}
           />
         )}
       </div>
@@ -126,6 +126,7 @@ export default function LocationInput({
         .location-input-container gmp-place-autocomplete {
           width: 100%;
           color-scheme: light only;
+          border-radius: 0.5rem;
         }
         .location-input-container gmp-place-autocomplete::part(input) {
           width: 100%;

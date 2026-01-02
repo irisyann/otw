@@ -132,9 +132,20 @@ export function useNearbyStations() {
         }
       }
 
-      // Sort by deviation percentage and take top 3
-      stationsWithDeviation.sort((a, b) => a.deviation.deviationPercent - b.deviation.deviationPercent);
-      setNearbyStations(stationsWithDeviation.slice(0, 3));
+      // Deduplicate stations that are geographically close (within ~100m)
+      const uniqueStations = stationsWithDeviation.filter((station, index, arr) => {
+        const isDuplicate = arr.slice(0, index).some(other => {
+          const latDiff = Math.abs(other.lat - station.lat);
+          const lngDiff = Math.abs(other.lng - station.lng);
+          // Roughly 0.001 degrees ≈ 100 meters
+          return latDiff < 0.001 && lngDiff < 0.001;
+        });
+        return !isDuplicate;
+      });
+
+      // Sort by shortest extra duration and take top 3
+      uniqueStations.sort((a, b) => a.deviation.extraDuration - b.deviation.extraDuration);
+      setNearbyStations(uniqueStations.slice(0, 3));
 
     } catch (err) {
       console.error('Error finding nearby stations:', err);
