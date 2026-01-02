@@ -18,31 +18,6 @@ export function useDirections() {
     return directionsServiceRef.current;
   }, []);
 
-  const calculateDirectRoute = useCallback(async (start, end) => {
-    const service = getDirectionsService();
-    if (!service || !start?.lat || !end?.lat) {
-      setDirectRoute(null);
-      return null;
-    }
-
-    try {
-      const result = await service.route({
-        origin: { lat: start.lat, lng: start.lng },
-        destination: { lat: end.lat, lng: end.lng },
-        travelMode: window.google.maps.TravelMode.DRIVING,
-      });
-
-      const route = result.routes[0].legs[0];
-      setDirectRoute(route);
-      setDirectionsResponse(result);
-      return route;
-    } catch (err) {
-      console.error('Direct route error:', err);
-      setError('Unable to calculate direct route');
-      return null;
-    }
-  }, [getDirectionsService]);
-
   const calculateStopDeviation = useCallback(async (start, end, stop, directRouteData) => {
     const service = getDirectionsService();
     if (!service || !start?.lat || !end?.lat || !stop?.lat) {

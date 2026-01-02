@@ -7,6 +7,7 @@ export function useNearbyStations() {
 
   const placesServiceRef = useRef(null);
   const directionsServiceRef = useRef(null);
+  const cacheRef = useRef(new Map());
 
   const getPlacesService = useCallback((map) => {
     if (!placesServiceRef.current && window.google && map) {
@@ -21,6 +22,13 @@ export function useNearbyStations() {
     }
     return directionsServiceRef.current;
   }, []);
+
+  // Get sample point count based on route length
+  const getOptimalSampleCount = (routeLength) => {
+    if (routeLength < 5000) return 3;      // Short route - 5km
+    if (routeLength < 15000) return 5;     // Medium route - 15km
+    return 7;                              // Long route - 15km+
+  };
 
   const searchStationsNearPoint = useCallback((placesService, location) => {
     return new Promise((resolve) => {
@@ -77,6 +85,14 @@ export function useNearbyStations() {
   }, [getDirectionsService]);
 
   const findNearbyStations = useCallback(async (map, start, end, directDirections, directRoute) => {
+    const cacheKey = `${start.lat},${start.lng}-${end.lat},${end.lng}`;
+
+    if (cacheRef.current.has(cacheKey)) {
+      setNearbyStations(cacheRef.current.get(cacheKey));
+      setLoadingStations(false);
+      return;
+    }
+
     if (!map || !directDirections || !directRoute) {
       setNearbyStations([]);
       return;
@@ -97,7 +113,8 @@ export function useNearbyStations() {
 
       // Sample points along the route (start, middle points, end)
       const samplePoints = [];
-      const step = Math.max(1, Math.floor(path.length / 5));
+      const sampleCount = getOptimalSampleCount(directRoute.distance.value);
+      const step = Math.max(1, Math.floor(path.length / sampleCount));
       for (let i = 0; i < path.length; i += step) {
         samplePoints.push(path[i]);
       }
@@ -147,6 +164,7 @@ export function useNearbyStations() {
       uniqueStations.sort((a, b) => a.deviation.extraDuration - b.deviation.extraDuration);
       setNearbyStations(uniqueStations.slice(0, 3));
 
+      cacheRef.current.set(cacheKey, uniqueStations.slice(0, 3));
     } catch (err) {
       console.error('Error finding nearby stations:', err);
       setNearbyStations([]);
