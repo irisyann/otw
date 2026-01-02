@@ -39,7 +39,7 @@ export default function NearbyStations({
             </p>
           ) : (
             <>
-              <p className="text-xs text-gray-500 mb-2">Top stations with least deviation:</p>
+              <p className="text-xs text-gray-500 mb-2">Top stations with least detour:</p>
               {stations.map((station, index) => {
                 const { label, color } = getDeviationLevel(station.deviation.deviationPercent);
                 const colorClasses = {

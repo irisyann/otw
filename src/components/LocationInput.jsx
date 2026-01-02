@@ -12,6 +12,8 @@ export default function LocationInput({
   const onPlaceSelectRef = useRef(onPlaceSelect);
   const [isGoogleReady, setIsGoogleReady] = useState(false);
   const [isEditing, setIsEditing] = useState(!value);
+  const [isFocused, setIsFocused] = useState(false);
+  const [hasInput, setHasInput] = useState(false);
 
   useEffect(() => {
     onPlaceSelectRef.current = onPlaceSelect;
@@ -21,6 +23,7 @@ export default function LocationInput({
   useEffect(() => {
     if (value) {
       setIsEditing(false);
+      setHasInput(false);
     }
   }, [value]);
 
@@ -51,12 +54,22 @@ export default function LocationInput({
       --gmpx-color-primary: #3b82f6;
     `;
 
-    if (placeholder) {
-      autocomplete.setAttribute('placeholder', placeholder);
-    }
-
     autocompleteRef.current = autocomplete;
     containerRef.current.appendChild(autocomplete);
+
+    // Track focus for custom placeholder
+    autocomplete.addEventListener('focusin', () => {
+      setIsFocused(true);
+      setHasInput(true); // Hide placeholder on focus
+    });
+    autocomplete.addEventListener('focusout', () => {
+      setIsFocused(false);
+      // Check if there's text in the input by querying the element
+      const input = autocomplete.querySelector('input') || autocomplete.shadowRoot?.querySelector('input');
+      if (input) {
+        setHasInput(input.value?.length > 0);
+      }
+    });
 
     autocomplete.addEventListener('gmp-select', async (event) => {
       const placePrediction = event.placePrediction || event.place || event.Eg;
@@ -89,8 +102,10 @@ export default function LocationInput({
     });
 
     return () => {
-      if (autocompleteRef.current && containerRef.current) {
-        containerRef.current.removeChild(autocompleteRef.current);
+      if (autocompleteRef.current) {
+        if (containerRef.current && containerRef.current.contains(autocompleteRef.current)) {
+          containerRef.current.removeChild(autocompleteRef.current);
+        }
         autocompleteRef.current = null;
       }
     };
@@ -116,13 +131,37 @@ export default function LocationInput({
             {value}
           </div>
         ) : (
-          <div
-            ref={containerRef}
-            className={`location-input-container border border-gray-200 rounded-lg ${icon ? 'has-icon' : ''}`}
-          />
+          <div className="relative" key={isEditing ? 'editing' : 'display'}>
+            <div
+              ref={containerRef}
+              className={`location-input-container border border-gray-200 rounded-lg ${icon ? 'has-icon' : ''}`}
+            />
+            {placeholder && !isFocused && !hasInput && (
+              <div
+                className={`absolute top-1/2 -translate-y-1/2 text-gray-400 pointer-events-none ${icon ? 'left-10' : 'left-4'}`}
+              >
+                {placeholder}
+              </div>
+            )}
+          </div>
         )}
       </div>
       <style>{`
+        .location-input-container {
+          position: relative;
+        }
+        .location-input-container::before {
+          content: '';
+          position: absolute;
+          left: 1px;
+          top: 1px;
+          bottom: 1px;
+          width: 2.5rem;
+          background: white;
+          z-index: 1;
+          border-radius: 0.5rem 0 0 0.5rem;
+          pointer-events: none;
+        }
         .location-input-container gmp-place-autocomplete {
           width: 100%;
           color-scheme: light only;
@@ -133,6 +172,7 @@ export default function LocationInput({
           padding: 0.75rem 1rem;
           border: 1px solid #d1d5db;
           border-radius: 0.5rem;
+          font-family: inherit;
           font-size: 1rem;
           outline: 1px solid #d1d5db;
           outline-offset: -1px;

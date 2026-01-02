@@ -120,13 +120,17 @@ export default function App() {
             stops={stops}
             directDirections={directDirections}
             combinedDirections={combinedDirections}
-            nearbyStations={showNearbyStations ? nearbyStations : []}
+            nearbyStations={showNearbyStations ? nearbyStations.filter(station =>
+              !stops.some(stop =>
+                stop.lat && Math.abs(stop.lat - station.lat) < 0.001 && Math.abs(stop.lng - station.lng) < 0.001
+              )
+            ) : []}
             onMapReady={handleMapReady}
           />
         </div>
 
         {/* Controls Section */}
-        <div className="flex-1 lg:w-96 lg:max-w-md lg:order-1 overflow-y-auto">
+        <div className="flex-1 lg:flex-none lg:w-96 lg:max-w-md lg:order-1 lg:h-screen lg:overflow-y-auto">
           <div className="p-4 space-y-4">
             {/* Header */}
             <div className="text-center pb-2 border-b">
@@ -138,11 +142,10 @@ export default function App() {
             <LocationInput
               label="Start"
               placeholder="Search start location..."
+              value={start.name}
               onPlaceSelect={(place) => setStart(place)}
               icon={
-                <span className="w-5 h-5 rounded-full bg-green-500 text-white text-xs flex items-center justify-center">
-                  A
-                </span>
+                <span className="w-5 h-5 rounded-full bg-green-500 text-white text-xs flex items-center justify-center"></span>
               }
             />
 
@@ -150,11 +153,10 @@ export default function App() {
             <LocationInput
               label="End"
               placeholder="Search end location..."
+              value={end.name}
               onPlaceSelect={(place) => setEnd(place)}
               icon={
-                <span className="w-5 h-5 rounded-full bg-red-500 text-white text-xs flex items-center justify-center">
-                  B
-                </span>
+                <span className="w-5 h-5 rounded-full bg-red-500 text-white text-xs flex items-center justify-center"></span>
               }
             />
 

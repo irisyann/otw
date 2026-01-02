@@ -18,6 +18,10 @@ export default function DeviationCard({ deviation }) {
     red: 'bg-red-500',
   };
 
+  const distanceSign = extraDistance >= 0 ? '+' : '-';
+  const durationSign = extraDuration >= 0 ? '+' : '-';
+  const percentSign = deviationPercent >= 0 ? '+' : '-';
+
   return (
     <div className={`mt-2 p-3 rounded-lg border ${colorClasses[color]}`}>
       <div className="flex items-center justify-between">
@@ -26,11 +30,11 @@ export default function DeviationCard({ deviation }) {
             {label}
           </span>
           <span className="text-sm font-medium">
-            +{deviationPercent.toFixed(1)}%
+            {percentSign}{Math.abs(deviationPercent).toFixed(1)}%
           </span>
         </div>
         <div className="text-xs text-gray-600">
-          +{formatDistance(extraDistance)} · +{formatDuration(extraDuration)}
+          {distanceSign}{formatDistance(Math.abs(extraDistance))} · {durationSign}{formatDuration(Math.abs(extraDuration))}
         </div>
       </div>
     </div>

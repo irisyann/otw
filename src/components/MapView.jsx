@@ -121,35 +121,35 @@ export default function MapView({ start, end, stops, directDirections, combinedD
       options={options}
       onLoad={onMapLoad}
     >
-      {/* Start marker */}
+      {/* Start marker - pin shape */}
       {start?.lat && (
         <Marker
           position={{ lat: start.lat, lng: start.lng }}
           icon={{
-            path: window.google?.maps?.SymbolPath?.CIRCLE,
-            scale: 12,
+            path: 'M12 0C5.4 0 0 5.4 0 12c0 7.2 12 24 12 24s12-16.8 12-24c0-6.6-5.4-12-12-12z',
             fillColor: '#22C55E',
             fillOpacity: 1,
             strokeColor: 'white',
-            strokeWeight: 3,
+            strokeWeight: 2,
+            scale: 1.2,
+            anchor: window.google?.maps ? new window.google.maps.Point(12, 36) : undefined,
           }}
-          label={{ text: 'A', color: 'white', fontWeight: 'bold', fontSize: '12px' }}
         />
       )}
 
-      {/* End marker */}
+      {/* End marker - pin shape */}
       {end?.lat && (
         <Marker
           position={{ lat: end.lat, lng: end.lng }}
           icon={{
-            path: window.google?.maps?.SymbolPath?.CIRCLE,
-            scale: 12,
+            path: 'M12 0C5.4 0 0 5.4 0 12c0 7.2 12 24 12 24s12-16.8 12-24c0-6.6-5.4-12-12-12z',
             fillColor: '#EF4444',
             fillOpacity: 1,
             strokeColor: 'white',
-            strokeWeight: 3,
+            strokeWeight: 2,
+            scale: 1.2,
+            anchor: window.google?.maps ? new window.google.maps.Point(12, 36) : undefined,
           }}
-          label={{ text: 'B', color: 'white', fontWeight: 'bold', fontSize: '12px' }}
         />
       )}
 
