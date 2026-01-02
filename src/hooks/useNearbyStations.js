@@ -8,7 +8,7 @@ export function useNearbyStations() {
   const placesServiceRef = useRef(null);
   const cacheRef = useRef(new Map());
 
-  const { getDirectionsService, calculateWaypointDeviation } = useRouteCalculations();
+  const { calculateWaypointDeviation } = useRouteCalculations();
 
   const getPlacesService = useCallback((map) => {
     if (!placesServiceRef.current && window.google && map) {
