@@ -1,5 +1,5 @@
-import { useState, useCallback, useRef } from 'react';
-import { calculateDeviation } from '../utils/deviationCalculator';
+import { useState, useCallback } from 'react';
+import { useRouteCalculations } from './useRouteCalculations';
 
 export function useDirections() {
   const [directRoute, setDirectRoute] = useState(null);
@@ -9,44 +9,7 @@ export function useDirections() {
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState(null);
 
-  const directionsServiceRef = useRef(null);
-
-  const getDirectionsService = useCallback(() => {
-    if (!directionsServiceRef.current && window.google) {
-      directionsServiceRef.current = new window.google.maps.DirectionsService();
-    }
-    return directionsServiceRef.current;
-  }, []);
-
-  const calculateStopDeviation = useCallback(async (start, end, stop, directRouteData) => {
-    const service = getDirectionsService();
-    if (!service || !start?.lat || !end?.lat || !stop?.lat) {
-      return null;
-    }
-
-    try {
-      const result = await service.route({
-        origin: { lat: start.lat, lng: start.lng },
-        destination: { lat: end.lat, lng: end.lng },
-        waypoints: [{ location: { lat: stop.lat, lng: stop.lng }, stopover: true }],
-        travelMode: window.google.maps.TravelMode.DRIVING,
-      });
-
-      const legs = result.routes[0].legs;
-      const totalDistance = legs.reduce((sum, leg) => sum + leg.distance.value, 0);
-      const totalDuration = legs.reduce((sum, leg) => sum + leg.duration.value, 0);
-
-      const detourRoute = {
-        distance: { value: totalDistance },
-        duration: { value: totalDuration },
-      };
-
-      return calculateDeviation(directRouteData, detourRoute);
-    } catch (err) {
-      console.error('Detour route error:', err);
-      return null;
-    }
-  }, [getDirectionsService]);
+  const { getDirectionsService, calculateWaypointDeviation } = useRouteCalculations();
 
   const calculateCombinedRoute = useCallback(async (start, end, stops) => {
     const service = getDirectionsService();
@@ -101,7 +64,7 @@ export function useDirections() {
       const newDeviations = {};
       for (const stop of stops) {
         if (stop.lat) {
-          const deviation = await calculateStopDeviation(start, end, stop, directRouteData);
+          const deviation = await calculateWaypointDeviation(start, end, stop, directRouteData);
           if (deviation) {
             newDeviations[stop.id] = deviation;
           }
@@ -124,7 +87,7 @@ export function useDirections() {
     } finally {
       setLoading(false);
     }
-  }, [getDirectionsService, calculateStopDeviation, calculateCombinedRoute]);
+  }, [getDirectionsService, calculateWaypointDeviation, calculateCombinedRoute]);
 
   const reset = useCallback(() => {
     setDirectRoute(null);

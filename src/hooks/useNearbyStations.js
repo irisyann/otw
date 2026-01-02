@@ -1,26 +1,20 @@
 import { useState, useCallback, useRef } from 'react';
-import { calculateDeviation } from '../utils/deviationCalculator';
+import { useRouteCalculations } from './useRouteCalculations';
 
 export function useNearbyStations() {
   const [nearbyStations, setNearbyStations] = useState([]);
   const [loadingStations, setLoadingStations] = useState(false);
 
   const placesServiceRef = useRef(null);
-  const directionsServiceRef = useRef(null);
   const cacheRef = useRef(new Map());
+
+  const { getDirectionsService, calculateWaypointDeviation } = useRouteCalculations();
 
   const getPlacesService = useCallback((map) => {
     if (!placesServiceRef.current && window.google && map) {
       placesServiceRef.current = new window.google.maps.places.PlacesService(map);
     }
     return placesServiceRef.current;
-  }, []);
-
-  const getDirectionsService = useCallback(() => {
-    if (!directionsServiceRef.current && window.google) {
-      directionsServiceRef.current = new window.google.maps.DirectionsService();
-    }
-    return directionsServiceRef.current;
   }, []);
 
   // Get sample point count based on route length
@@ -49,40 +43,6 @@ export function useNearbyStations() {
       );
     });
   }, []);
-
-  const calculateStationDeviation = useCallback(async (start, end, station, directRouteData) => {
-    const service = getDirectionsService();
-    if (!service) return null;
-
-    try {
-      const result = await service.route({
-        origin: { lat: start.lat, lng: start.lng },
-        destination: { lat: end.lat, lng: end.lng },
-        waypoints: [{
-          location: {
-            lat: station.geometry.location.lat(),
-            lng: station.geometry.location.lng(),
-          },
-          stopover: true,
-        }],
-        travelMode: window.google.maps.TravelMode.DRIVING,
-      });
-
-      const legs = result.routes[0].legs;
-      const totalDistance = legs.reduce((sum, leg) => sum + leg.distance.value, 0);
-      const totalDuration = legs.reduce((sum, leg) => sum + leg.duration.value, 0);
-
-      const detourRoute = {
-        distance: { value: totalDistance },
-        duration: { value: totalDuration },
-      };
-
-      return calculateDeviation(directRouteData, detourRoute);
-    } catch (err) {
-      console.error('Station deviation error:', err);
-      return null;
-    }
-  }, [getDirectionsService]);
 
   const findNearbyStations = useCallback(async (map, start, end, directDirections, directRoute) => {
     const cacheKey = `${start.lat},${start.lng}-${end.lat},${end.lng}`;
@@ -136,13 +96,18 @@ export function useNearbyStations() {
       // Calculate deviation for each station
       const stationsWithDeviation = [];
       for (const station of allStations) {
-        const deviation = await calculateStationDeviation(start, end, station, directRoute);
+        // Convert station object to waypoint format
+        const waypoint = {
+          lat: station.geometry.location.lat(),
+          lng: station.geometry.location.lng(),
+        };
+        const deviation = await calculateWaypointDeviation(start, end, waypoint, directRoute);
         if (deviation) {
           stationsWithDeviation.push({
             id: station.place_id,
             name: station.name,
-            lat: station.geometry.location.lat(),
-            lng: station.geometry.location.lng(),
+            lat: waypoint.lat,
+            lng: waypoint.lng,
             vicinity: station.vicinity,
             deviation,
           });
@@ -171,7 +136,7 @@ export function useNearbyStations() {
     } finally {
       setLoadingStations(false);
     }
-  }, [getPlacesService, searchStationsNearPoint, calculateStationDeviation]);
+  }, [getPlacesService, searchStationsNearPoint, calculateWaypointDeviation]);
 
   const clearStations = useCallback(() => {
     setNearbyStations([]);
