@@ -4,7 +4,7 @@ Fully vibe-coded with Claude. Helps you figure out if your stops are actually on
 
 ## Features
 <img width="178" height="404" alt="mobile view" src="https://github.com/user-attachments/assets/4ae20784-e805-4b10-847c-68478c447167" />
-<img width="800" height="404" alt="desktop view" src="https://github.com/user-attachments/assets/4a9aa504-1404-420f-9744-4e4d8e0d606a" />
+<img width="800" height="404" alt="desktop view" src="https://github.com/user-attachments/assets/01eb6be5-621f-4443-ba53-a152fa1870bb" />
 
 
 
