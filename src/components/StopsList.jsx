@@ -27,6 +27,7 @@ export default function StopsList({ stops, onStopChange, onRemoveStop, onAddStop
                   <LocationInput
                     label={`Stop ${index + 1}`}
                     placeholder="Search location..."
+                    value={stop.name}
                     onPlaceSelect={(place) => onStopChange(stop.id, { ...stop, ...place })}
                     icon={
                       <span className="w-5 h-5 rounded-full bg-blue-500 text-white text-xs flex items-center justify-center">

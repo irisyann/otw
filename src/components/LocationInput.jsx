@@ -4,16 +4,25 @@ export default function LocationInput({
   label,
   placeholder,
   onPlaceSelect,
-  icon
+  icon,
+  value
 }) {
   const containerRef = useRef(null);
   const autocompleteRef = useRef(null);
   const onPlaceSelectRef = useRef(onPlaceSelect);
   const [isGoogleReady, setIsGoogleReady] = useState(false);
+  const [isEditing, setIsEditing] = useState(!value);
 
   useEffect(() => {
     onPlaceSelectRef.current = onPlaceSelect;
   }, [onPlaceSelect]);
+
+  // Update editing state when value changes
+  useEffect(() => {
+    if (value) {
+      setIsEditing(false);
+    }
+  }, [value]);
 
   // Check for Google Maps availability
   useEffect(() => {
@@ -28,7 +37,7 @@ export default function LocationInput({
   }, []);
 
   useEffect(() => {
-    if (!containerRef.current || !isGoogleReady) return;
+    if (!containerRef.current || !isGoogleReady || !isEditing) return;
     if (autocompleteRef.current) return;
 
     const autocomplete = new window.google.maps.places.PlaceAutocompleteElement({
@@ -85,7 +94,7 @@ export default function LocationInput({
         autocompleteRef.current = null;
       }
     };
-  }, [isGoogleReady, placeholder]);
+  }, [isGoogleReady, placeholder, isEditing]);
 
   return (
     <div className="w-full">
@@ -98,10 +107,20 @@ export default function LocationInput({
             {icon}
           </span>
         )}
-        <div
-          ref={containerRef}
-          className={`location-input-container ${icon ? 'has-icon' : ''}`}
-        />
+        {!isEditing && value ? (
+          <div
+            onClick={() => setIsEditing(true)}
+            className={`w-full px-4 py-3 border border-gray-300 rounded-lg text-base bg-white text-gray-700 cursor-pointer hover:border-gray-400 transition-colors truncate ${icon ? 'pl-10' : ''}`}
+            title={value}
+          >
+            {value}
+          </div>
+        ) : (
+          <div
+            ref={containerRef}
+            className={`location-input-container ${icon ? 'has-icon' : ''}`}
+          />
+        )}
       </div>
       <style>{`
         .location-input-container gmp-place-autocomplete {
