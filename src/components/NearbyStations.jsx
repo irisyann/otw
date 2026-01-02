@@ -74,12 +74,12 @@ export default function NearbyStations({
                           {label}
                         </span>
                         <p className="text-xs text-gray-500 mt-0.5">
-                          +{station.deviation.deviationPercent.toFixed(1)}%
+                          {station.deviation.deviationPercent >= 0 ? '+' : ''}{station.deviation.deviationPercent.toFixed(1)}%
                         </p>
                       </div>
                     </div>
                     <div className="mt-1.5 text-xs text-gray-500 pl-7">
-                      +{formatDistance(station.deviation.extraDistance)} · +{formatDuration(station.deviation.extraDuration)}
+                      {station.deviation.extraDistance >= 0 ? '+' : ''}{formatDistance(Math.abs(station.deviation.extraDistance))} · {station.deviation.extraDuration >= 0 ? '+' : ''}{formatDuration(Math.abs(station.deviation.extraDuration))}
                     </div>
                     <p className="text-xs text-purple-600 pl-7 mt-1">Click to add as stop</p>
                   </div>
